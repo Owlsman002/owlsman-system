@@ -13,8 +13,8 @@ st.set_page_config(
     layout="wide"
 )
 
-
 st.title("🦉 OWLSNATION ENGINE V2")
+
 
 
 # =====================================================
@@ -22,20 +22,25 @@ st.title("🦉 OWLSNATION ENGINE V2")
 # =====================================================
 
 def safe_div(a,b):
+
     if b == 0:
         return 0
+
     return a/b
 
 
+
 def odds(prob):
+
     if prob <= 0:
         return 999
+
     return round(1/prob,2)
 
 
 
 # =====================================================
-# INPUTS
+# INPUT SECTION
 # =====================================================
 
 st.sidebar.header("MATCH INPUT")
@@ -54,69 +59,87 @@ away = st.sidebar.text_input(
 
 
 
-st.sidebar.subheader("HOME DATA")
+# =====================================================
+# HOME TEAM DATA
+# =====================================================
+
+st.sidebar.subheader("HOME LAST 4 MATCHES")
 
 
 G_A = st.sidebar.number_input(
-    "Goals Scored",
+    "Home Average Goals Scored",
     value=2.0
 )
 
+
 C_A = st.sidebar.number_input(
-    "Goals Conceded",
+    "Home Average Goals Conceded",
     value=4.0
 )
 
+
 SOT_A = st.sidebar.number_input(
-    "Shots On Target For",
+    "Home Shots On Target For",
     value=5.0
 )
 
+
 SOTA_A = st.sidebar.number_input(
-    "Shots On Target Against",
+    "Home Shots On Target Against",
     value=3.0
 )
 
+
 xG_A = st.sidebar.number_input(
-    "xG",
+    "Home xG",
     value=0.77
 )
 
+
 BC_A = st.sidebar.number_input(
-    "Big Chances",
+    "Home Big Chances",
     value=0.58
 )
 
 
 
 
-st.sidebar.subheader("AWAY DATA")
+# =====================================================
+# AWAY TEAM DATA
+# =====================================================
+
+st.sidebar.subheader("AWAY LAST 4 MATCHES")
 
 
 G_B = st.sidebar.number_input(
-    "Away Goals Scored",
+    "Away Average Goals Scored",
     value=3.0
 )
 
+
 C_B = st.sidebar.number_input(
-    "Away Goals Conceded",
+    "Away Average Goals Conceded",
     value=5.0
 )
+
 
 SOT_B = st.sidebar.number_input(
     "Away Shots On Target For",
     value=2.0
 )
 
+
 SOTA_B = st.sidebar.number_input(
     "Away Shots On Target Against",
     value=8.0
 )
 
+
 xG_B = st.sidebar.number_input(
     "Away xG",
     value=0.89
 )
+
 
 BC_B = st.sidebar.number_input(
     "Away Big Chances",
@@ -125,34 +148,48 @@ BC_B = st.sidebar.number_input(
 
 
 
-st.sidebar.subheader("BOOKMAKER")
+
+# =====================================================
+# MANUAL BOOKMAKER ODDS INPUT
+# =====================================================
+
+st.sidebar.subheader("BOOKMAKER ODDS INPUT")
 
 
 BOOK_HOME = st.sidebar.number_input(
-    "Home Odd",
-    value=3.00
+    "Bookmaker Home Odd",
+    value=3.00,
+    min_value=1.01
 )
+
 
 BOOK_DRAW = st.sidebar.number_input(
-    "Draw Odd",
-    value=3.20
+    "Bookmaker Draw Odd",
+    value=3.20,
+    min_value=1.01
 )
+
 
 BOOK_AWAY = st.sidebar.number_input(
-    "Away Odd",
-    value=2.20
+    "Bookmaker Away Odd",
+    value=2.20,
+    min_value=1.01
 )
 
 
 
 
-if st.button("RUN ENGINE"):
-
-
-
 # =====================================================
-# PHASE 1
+# RUN ENGINE
 # =====================================================
+
+if st.button("RUN OWLSNATION ENGINE"):
+
+
+
+    # =================================================
+    # PHASE 1
+    # =================================================
 
 
     Calc_Scored_A = safe_div(
@@ -180,9 +217,9 @@ if st.button("RUN ENGINE"):
 
 
 
-# =====================================================
-# PHASE 2
-# =====================================================
+    # =================================================
+    # PHASE 2
+    # =================================================
 
 
     Net_A = safe_div(
@@ -198,12 +235,16 @@ if st.button("RUN ENGINE"):
 
 
     Power_A = (
+
         safe_div(
             Ratio_A,
             Net_A
         )
+
         *
+
         SOT_A
+
     )
 
 
@@ -222,45 +263,59 @@ if st.button("RUN ENGINE"):
 
 
     Power_B = (
+
         safe_div(
             Ratio_B,
             Net_B
         )
+
         *
+
         SOT_B
+
     )
 
 
 
-# =====================================================
-# PHASE 3
-# =====================================================
+
+    # =================================================
+    # PHASE 3
+    # =================================================
 
 
     alpha = (
+
         safe_div(
             xG_A + BC_A,
             2
         )
+
         *
+
         Power_A
+
     )
 
 
+
     beta = (
+
         safe_div(
             xG_B + BC_B,
             2
         )
+
         *
+
         Power_B
+
     )
 
 
 
-# =====================================================
-# PHASE 4 POISSON
-# =====================================================
+    # =================================================
+    # PHASE 4 POISSON
+    # =================================================
 
 
     cap = 6
@@ -284,16 +339,17 @@ if st.button("RUN ENGINE"):
     ]
 
 
-    grid = np.outer(
+
+    grid=np.outer(
         home_matrix,
         away_matrix
     )
 
 
 
-    home_prob = 0
-    draw_prob = 0
-    away_prob = 0
+    home_prob=0
+    draw_prob=0
+    away_prob=0
 
 
 
@@ -318,6 +374,7 @@ if st.button("RUN ENGINE"):
 
 
 
+
     total = (
         home_prob+
         draw_prob+
@@ -325,7 +382,8 @@ if st.button("RUN ENGINE"):
     )
 
 
-    base = {
+
+    base={
 
         "Home":home_prob/total,
 
@@ -337,45 +395,50 @@ if st.button("RUN ENGINE"):
 
 
 
-# =====================================================
-# PHASE 5 VARIANCE STATES
-# =====================================================
+
+    # =================================================
+    # VARIANCE DRAG
+    # =================================================
 
 
-    sigma = 0.036
+    sigma=0.036
 
-    drag = 100*sigma
+    drag=100*sigma
 
 
     states={}
 
-
-    states["0"]=base
+    states["Odd 0"]=base
 
 
 
     def stress(target):
 
-        h = base["Home"]*100
-        d = base["Draw"]*100
-        a = base["Away"]*100
+        h=base["Home"]*100
+        d=base["Draw"]*100
+        a=base["Away"]*100
 
 
         if target=="Home":
-            h = h+50-drag
+
+            h=h+50-drag
+
 
         if target=="Draw":
-            d = d+50-drag
+
+            d=d+50-drag
+
 
         if target=="Away":
-            a = a+50-drag
+
+            a=a+50-drag
 
 
 
         total=h+d+a
 
 
-        return {
+        return{
 
             "Home":h/total,
 
@@ -387,11 +450,12 @@ if st.button("RUN ENGINE"):
 
 
 
-    states["1"]=stress("Home")
 
-    states["2"]=stress("Away")
+    states["Odd 1"]=stress("Home")
 
-    states["3"]=stress("Draw")
+    states["Odd 2"]=stress("Away")
+
+    states["Odd 3"]=stress("Draw")
 
 
 
@@ -403,7 +467,7 @@ if st.button("RUN ENGINE"):
     total=h+d+a
 
 
-    states["4"]={
+    states["Odd 4"]={
 
         "Home":h/total,
 
@@ -415,9 +479,10 @@ if st.button("RUN ENGINE"):
 
 
 
-# =====================================================
-# DOMINANCE
-# =====================================================
+
+    # =================================================
+    # DOMINANCE
+    # =================================================
 
 
     dominance={}
@@ -425,15 +490,21 @@ if st.button("RUN ENGINE"):
 
     for side in ["Home","Away"]:
 
+
         score=0
 
 
         for s in states:
 
+
             score += (
+
                 states[s][side]
+
                 -
+
                 base[side]
+
             )
 
 
@@ -442,15 +513,17 @@ if st.button("RUN ENGINE"):
 
 
 
-# =====================================================
-# MASTER ODDS
-# =====================================================
+    # =================================================
+    # MASTER ODDS
+    # =================================================
 
 
     master_prob={}
 
 
+
     for x in ["Home","Draw","Away"]:
+
 
         master_prob[x]=np.mean(
 
@@ -465,6 +538,7 @@ if st.button("RUN ENGINE"):
         )
 
 
+
     master_odds={
 
         x:odds(master_prob[x])
@@ -475,13 +549,13 @@ if st.button("RUN ENGINE"):
 
 
 
-
-# =====================================================
-# MARKET TREE
-# =====================================================
+    # =================================================
+    # BOOKMAKER COMPARISON
+    # =================================================
 
 
     book_prob={
+
 
         "Home":1/BOOK_HOME,
 
@@ -504,6 +578,7 @@ if st.button("RUN ENGINE"):
     }
 
 
+
     best=max(
         value,
         key=value.get
@@ -511,28 +586,12 @@ if st.button("RUN ENGINE"):
 
 
 
-    expected_goals = alpha+beta
+    # =================================================
+    # CORRECT SCORES
+    # =================================================
 
 
-    btts=(
-
-        1-math.exp(-alpha)
-
-    )*(
-
-        1-math.exp(-beta)
-
-    )
-
-
-
-
-# =====================================================
-# CORRECT SCORES
-# =====================================================
-
-
-    indexes=np.argsort(
+    top=np.argsort(
         grid.flatten()
     )[::-1][:2]
 
@@ -540,12 +599,14 @@ if st.button("RUN ENGINE"):
     scores=[]
 
 
-    for i in indexes:
+    for i in top:
+
 
         h,a=np.unravel_index(
             i,
             grid.shape
         )
+
 
         scores.append(
             f"{h}-{a}"
@@ -554,9 +615,9 @@ if st.button("RUN ENGINE"):
 
 
 
-# =====================================================
-# OUTPUT
-# =====================================================
+    # =================================================
+    # OUTPUT
+    # =================================================
 
 
     st.header(
@@ -564,7 +625,7 @@ if st.button("RUN ENGINE"):
     )
 
 
-    st.subheader("STRENGTH")
+    st.subheader("FINAL STRENGTH")
 
     st.write(
         "Home Strength:",
@@ -599,56 +660,35 @@ if st.button("RUN ENGINE"):
 
 
 
-    st.subheader("DOMINANCE")
+    st.subheader("BOOKMAKER ODDS")
 
-    st.write(dominance)
+    st.write({
+
+        "Home":BOOK_HOME,
+
+        "Draw":BOOK_DRAW,
+
+        "Away":BOOK_AWAY
+
+    })
 
 
 
-    st.subheader("VALUE EDGE")
+    st.subheader("VALUE GAP")
 
     st.write(value)
 
+
     st.write(
-        "Best Value:",
+        "Best Value Side:",
         best
     )
 
 
 
-    st.subheader("MARKET CHECK")
+    st.subheader("DOMINANCE INDEX")
 
-    st.write(
-        "BTTS Probability:",
-        round(btts*100,2),
-        "%"
-    )
-
-
-    st.write(
-        "Expected Goals:",
-        round(expected_goals,2)
-    )
-
-
-
-    if expected_goals >= 2.8:
-
-        st.success(
-            "HIGH SCORING SIGNAL"
-        )
-
-    elif expected_goals <=2:
-
-        st.success(
-            "LOW SCORING SIGNAL"
-        )
-
-    else:
-
-        st.info(
-            "NORMAL GOAL ENVIRONMENT"
-        )
+    st.write(dominance)
 
 
 

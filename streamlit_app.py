@@ -4,30 +4,30 @@ from scipy.stats import poisson
 import math
 
 
-# ==========================
+# =====================================================
 # APP SETTINGS
-# ==========================
+# =====================================================
 
 st.set_page_config(
-    page_title="OWLSNATION ENGINE",
+    page_title="OWLSNATION ENGINE V1",
     layout="wide"
 )
 
 
-st.title("🦉 OWLSNATION BETTING ENGINE")
+st.title("🦉 OWLSNATION BETTING ENGINE V1")
 
 
 
-# ==========================
+# =====================================================
 # SAFE FUNCTIONS
-# ==========================
+# =====================================================
 
 def safe_div(a,b):
 
     if b == 0:
         return 0
 
-    return a/b
+    return a / b
 
 
 
@@ -40,10 +40,9 @@ def odd_converter(prob):
 
 
 
-
-# ==========================
+# =====================================================
 # MANUAL INPUT
-# ==========================
+# =====================================================
 
 
 home_team = st.text_input(
@@ -75,25 +74,25 @@ C_A = st.number_input(
 
 
 SOT_A = st.number_input(
-    "Home Average Shots On Target For",
+    "Home Shots On Target For",
     value=5.0
 )
 
 
 SOTA_A = st.number_input(
-    "Home Average Shots On Target Against",
+    "Home Shots On Target Against",
     value=3.0
 )
 
 
 xG_A = st.number_input(
-    "Home Normalized xG",
+    "Home xG",
     value=0.77
 )
 
 
 BC_A = st.number_input(
-    "Home Normalized Big Chances",
+    "Home Big Chances",
     value=0.58
 )
 
@@ -116,25 +115,25 @@ C_B = st.number_input(
 
 
 SOT_B = st.number_input(
-    "Away Average Shots On Target For",
+    "Away Shots On Target For",
     value=2.0
 )
 
 
 SOTA_B = st.number_input(
-    "Away Average Shots On Target Against",
+    "Away Shots On Target Against",
     value=8.0
 )
 
 
 xG_B = st.number_input(
-    "Away Normalized xG",
+    "Away xG",
     value=0.89
 )
 
 
 BC_B = st.number_input(
-    "Away Normalized Big Chances",
+    "Away Big Chances",
     value=0.50
 )
 
@@ -145,38 +144,38 @@ st.header("BOOKMAKER ODDS")
 
 
 BOOK_HOME = st.number_input(
-    "Bookmaker Home Odd",
+    "Book Home Odd",
     value=3.00
 )
 
 
 BOOK_DRAW = st.number_input(
-    "Bookmaker Draw Odd",
+    "Book Draw Odd",
     value=3.20
 )
 
 
 BOOK_AWAY = st.number_input(
-    "Bookmaker Away Odd",
+    "Book Away Odd",
     value=2.20
 )
 
 
 
 
-# ==========================
-# RUN MODEL
-# ==========================
+# =====================================================
+# RUN ENGINE
+# =====================================================
 
 
 if st.button("RUN MODEL"):
 
 
 
-    # ======================
+    # =================================================
     # PHASE 1
-    # EFFICIENCY
-    # ======================
+    # EFFICIENCY CONVERSION
+    # =================================================
 
 
     Pct_Scored_A = (
@@ -185,172 +184,143 @@ if st.button("RUN MODEL"):
 
 
     Calc_Scored_A = (
-
         1 / Pct_Scored_A
-
     ) * 100
 
 
 
     Pct_Concede_A = (
-
         C_A / SOTA_A
-
     ) * 100
 
 
-
     Calc_Concede_A = (
-
         1 / Pct_Concede_A
-
     ) * 100
 
 
 
 
     Pct_Scored_B = (
-
         G_B / SOT_B
-
     ) * 100
-
 
 
     Calc_Scored_B = (
-
         1 / Pct_Scored_B
-
     ) * 100
-
 
 
 
     Pct_Concede_B = (
-
         C_B / SOTA_B
-
     ) * 100
-
 
 
     Calc_Concede_B = (
-
         1 / Pct_Concede_B
-
     ) * 100
 
 
 
 
 
-    # ======================
+    # =================================================
     # PHASE 2
     # NET + POWER
-    # ======================
+    # =================================================
 
 
-
-    Net_A = (
-
-        Calc_Scored_A /
-
+    Net_A = safe_div(
+        Calc_Scored_A,
         Calc_Concede_B
-
     )
 
 
-
-    Ratio_A = (
-
-        G_A /
-
+    Ratio_A = safe_div(
+        G_A,
         C_B
-
     )
-
 
 
     Power_A = (
-
-        Ratio_A /
-
-        Net_A
-
-    ) * SOT_A
-
-
-
+        safe_div(
+            Ratio_A,
+            Net_A
+        )
+        *
+        SOT_A
+    )
 
 
-    Net_B = (
 
-        Calc_Scored_B /
 
+    Net_B = safe_div(
+        Calc_Scored_B,
         Calc_Concede_A
-
     )
 
 
-
-    Ratio_B = (
-
-        G_B /
-
+    Ratio_B = safe_div(
+        G_B,
         C_A
-
     )
-
 
 
     Power_B = (
+        safe_div(
+            Ratio_B,
+            Net_B
+        )
+        *
+        SOT_B
+    )
 
-        Ratio_B /
-
-        Net_B
-
-    ) * SOT_B
 
 
 
-
-    # ======================
+    # =================================================
     # PHASE 3
     # FINAL STRENGTH
-    # ======================
-
+    # =================================================
 
 
     alpha = (
 
-        (xG_A + BC_A)
+        safe_div(
+            xG_A + BC_A,
+            2
+        )
 
-        /
+        *
 
-        2
+        Power_A
 
-    ) * Power_A
+    )
 
 
 
     beta = (
 
-        (xG_B + BC_B)
+        safe_div(
+            xG_B + BC_B,
+            2
+        )
 
-        /
+        *
 
-        2
+        Power_B
 
-    ) * Power_B
-
-
+    )
 
 
 
-    # ======================
+
+
+    # =================================================
     # PHASE 4
     # POISSON MATRIX
-    # ======================
+    # =================================================
 
 
     MAX_SCORE_CAP = 6
@@ -395,11 +365,8 @@ if st.button("RUN MODEL"):
 
 
     P_Home_Base = 0
-
     P_Draw_Base = 0
-
     P_Away_Base = 0
-
 
 
 
@@ -425,6 +392,7 @@ if st.button("RUN MODEL"):
 
 
 
+
     total = (
 
         P_Home_Base +
@@ -437,76 +405,77 @@ if st.button("RUN MODEL"):
 
 
 
-    base = {
+    P_Home_Base /= total
+    P_Draw_Base /= total
+    P_Away_Base /= total
 
 
-        "Home":P_Home_Base/total,
 
-        "Draw":P_Draw_Base/total,
+    baseline = {
 
-        "Away":P_Away_Base/total
+        "Home":P_Home_Base,
 
+        "Draw":P_Draw_Base,
+
+        "Away":P_Away_Base
 
     }
 
 
 
 
-
-    # ======================
+    # =================================================
     # PHASE 5
     # VARIANCE DRAG
-    # ======================
+    # =================================================
 
 
     sigma = 0.036
 
 
-    states={}
+    drag = 100 * sigma
 
 
 
-    states["0"]=base
+    states = {}
 
 
 
-
-    def stress_state(target):
-
-
-        h = base["Home"]*100
-
-        d = base["Draw"]*100
-
-        a = base["Away"]*100
-
-
-
-        if target=="Home":
-
-            h=(h+50)-3.6
-
-
-
-        if target=="Away":
-
-            a=(a+50)-3.6
-
-
-
-        if target=="Draw":
-
-            d=(d+50)-3.6
+    states["0"] = baseline
 
 
 
 
-        total=h+d+a
+    def create_state(target):
+
+
+        h = P_Home_Base * 100
+        d = P_Draw_Base * 100
+        a = P_Away_Base * 100
+
+
+
+        if target == "Home":
+
+            h = (h + 50) - drag
+
+
+        if target == "Draw":
+
+            d = (d + 50) - drag
+
+
+        if target == "Away":
+
+            a = (a + 50) - drag
+
+
+
+        total = h+d+a
 
 
 
         return {
-
 
             "Home":h/total,
 
@@ -514,35 +483,35 @@ if st.button("RUN MODEL"):
 
             "Away":a/total
 
-
         }
 
 
 
 
-    states["1"]=stress_state("Home")
 
-    states["2"]=stress_state("Away")
+    states["1"] = create_state("Home")
 
-    states["3"]=stress_state("Draw")
+    states["2"] = create_state("Away")
 
-
-
-
-    h=(base["Home"]*100+50)-3.6
-
-    d=(base["Draw"]*100+50)-3.6
-
-    a=(base["Away"]*100+50)-3.6
+    states["3"] = create_state("Draw")
 
 
 
-    total=h+d+a
+
+
+    h = (P_Home_Base*100)+50-drag
+
+    d = (P_Draw_Base*100)+50-drag
+
+    a = (P_Away_Base*100)+50-drag
 
 
 
-    states["4"]={
+    total = h+d+a
 
+
+
+    states["4"] = {
 
         "Home":h/total,
 
@@ -550,25 +519,27 @@ if st.button("RUN MODEL"):
 
         "Away":a/total
 
-
     }
 
 
 
 
-    # ======================
+
+
+    # =================================================
     # DOMINANCE
-    # ======================
+    # =================================================
 
 
-    dominance={}
+    dominance = {}
 
 
 
     for side in ["Home","Away"]:
 
 
-        score=0
+        score = 0
+
 
 
         for state in states.values():
@@ -580,46 +551,40 @@ if st.button("RUN MODEL"):
 
                 -
 
-                base[side]
+                baseline[side]
 
             )
 
 
-        dominance[side]=score
+        dominance[side] = score
 
 
 
 
 
-    # ======================
-    # MASTER BLEND
-    # ======================
+    # =================================================
+    # MASTER BLENDED ODDS
+    # =================================================
 
 
-    master_prob={}
+    master_probability = {}
 
 
 
     for outcome in [
-
         "Home",
-
         "Draw",
-
         "Away"
-
     ]:
 
 
-        master_prob[outcome]=np.mean(
-
+        master_probability[outcome] = np.mean(
 
             [
 
                 states[x][outcome]
 
                 for x in states
-
 
             ]
 
@@ -628,26 +593,30 @@ if st.button("RUN MODEL"):
 
 
 
+    master_odds = {
 
-    master_odds={
 
+        x:
 
-        x:odd_converter(y)
+        odd_converter(
+            y
+        )
 
-        for x,y in master_prob.items()
-
+        for x,y in master_probability.items()
 
     }
 
 
 
 
-    # ======================
-    # MARKET VALUE
-    # ======================
+
+    # =================================================
+    # MARKET TREE
+    # =================================================
 
 
-    bookmaker_prob={
+
+    bookmaker_probability = {
 
 
         "Home":1/BOOK_HOME,
@@ -656,29 +625,31 @@ if st.button("RUN MODEL"):
 
         "Away":1/BOOK_AWAY
 
-
     }
 
 
 
 
-    value_margin={
+    value_margin = {
 
 
         x:
 
-        master_prob[x]-bookmaker_prob[x]
+        master_probability[x]
+
+        -
+
+        bookmaker_probability[x]
 
 
-        for x in master_prob
-
+        for x in master_probability
 
     }
 
 
 
 
-    best_side=max(
+    best_value = max(
 
         value_margin,
 
@@ -689,24 +660,17 @@ if st.button("RUN MODEL"):
 
 
 
-
-    # ======================
-    # MARKET FILTERS
-    # ======================
-
-
-
     expected_goals = alpha + beta
 
 
 
-    btts_probability=(
+    btts_probability = (
 
-        1-math.exp(-alpha)
+        1 - math.exp(-alpha)
 
-    )*(
+    ) * (
 
-        1-math.exp(-beta)
+        1 - math.exp(-beta)
 
     )
 
@@ -714,12 +678,12 @@ if st.button("RUN MODEL"):
 
 
 
-    # ======================
+    # =================================================
     # CORRECT SCORES
-    # ======================
+    # =================================================
 
 
-    top_scores=np.argsort(
+    highest = np.argsort(
 
         grid.flatten()
 
@@ -727,16 +691,16 @@ if st.button("RUN MODEL"):
 
 
 
-    scores=[]
+    scores = []
 
 
 
-    for index in top_scores:
+    for i in highest:
 
 
-        h,a=np.unravel_index(
+        h,a = np.unravel_index(
 
-            index,
+            i,
 
             grid.shape
 
@@ -753,10 +717,9 @@ if st.button("RUN MODEL"):
 
 
 
-    # ======================
+    # =================================================
     # OUTPUT
-    # ======================
-
+    # =================================================
 
 
     st.header(
@@ -768,7 +731,6 @@ if st.button("RUN MODEL"):
 
 
     st.subheader("FINAL STRENGTH")
-
 
 
     st.write(
@@ -790,18 +752,25 @@ if st.button("RUN MODEL"):
 
     st.write({
 
-        "Home":odd_converter(base["Home"]),
+        "Home":
 
-        "Draw":odd_converter(base["Draw"]),
+        odd_converter(P_Home_Base),
 
-        "Away":odd_converter(base["Away"])
+        "Draw":
+
+        odd_converter(P_Draw_Base),
+
+        "Away":
+
+        odd_converter(P_Away_Base)
 
     })
 
 
 
 
-    st.subheader("MASTER ODDS")
+
+    st.subheader("MASTER BLENDED ODDS")
 
 
     st.write(master_odds)
@@ -816,17 +785,15 @@ if st.button("RUN MODEL"):
 
 
 
-
     st.subheader("VALUE MARGIN")
 
 
     st.write(value_margin)
 
 
-
     st.write(
-        "Best Value Side:",
-        best_side
+        "Best Value Edge:",
+        best_value
     )
 
 
@@ -841,11 +808,8 @@ if st.button("RUN MODEL"):
         "BTTS Probability:",
 
         round(
-
             btts_probability*100,
-
             2
-
         ),
 
         "%"
@@ -859,19 +823,53 @@ if st.button("RUN MODEL"):
         "Expected Goals:",
 
         round(
-
             expected_goals,
-
             2
-
         )
 
     )
 
 
 
+    if btts_probability > 0.55:
 
-    st.subheader("TOP CORRECT SCORES")
+        st.success(
+            "BTTS YES SUPPORT"
+        )
+
+    else:
+
+        st.warning(
+            "BTTS NOT STRONG"
+        )
+
+
+
+
+    if expected_goals >= 2.8:
+
+        st.success(
+            "HIGH SCORING MATCH SIGNAL"
+        )
+
+
+    elif expected_goals <= 2.0:
+
+        st.success(
+            "LOW SCORING MATCH SIGNAL"
+        )
+
+
+    else:
+
+        st.info(
+            "NORMAL GOAL ENVIRONMENT"
+        )
+
+
+
+
+    st.subheader("CORRECT SCORES")
 
 
     st.write(scores)

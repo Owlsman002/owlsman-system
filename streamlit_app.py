@@ -1,4 +1,4 @@
-import numpy as np
+  import numpy as np
 import scipy.stats as stats
 import streamlit as st
 
@@ -23,7 +23,6 @@ TARGET_LEAGUES = {
     "Netherlands - Eerste Divisie": 603,
     "Portugal - Liga Portugal": 462,
     "Portugal - Liga Portugal 2": 465,
-    # --- INTERNATIONAL TOURNAMENTS ADDED ---
     "FIFA World Cup": 732,
     "UEFA European Championship": 24,
     "Copa America": 27,
@@ -33,27 +32,14 @@ TARGET_LEAGUES = {
 # WEBSITE INTERFACE DESIGN (OWLSMAN BRANDING ARCHITECTURE)
 # ==============================================================================
 st.set_page_config(page_title="OWLSMAN Engine", layout="wide")
-st.markdown(
-    """
-    <style>
-    body { background-color: #0e1117; color: #ffffff; }
-    .main-header { font-family: 'Arial', sans-serif; font-weight: 900; color: #10b981; text-align: center; margin-bottom: 25px; }
-    .fixture-container { background-color: #1f2937; padding: 20px; border-radius: 10px; border: 1px solid #374151; margin-bottom: 20px; }
-    .market-badge { background-color: #047857; color: #ffffff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-right: 5px; }
-    .fade-badge { background-color: #b91c1c; color: #ffffff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-right: 5px; }
-    </style>
-    """,
-    unsafe_html=True,
-)
+
+# Simple, ultra-clean design block to prevent formatting line breaks
+st.markdown("<h1 style='text-align:center;color:#10b981;font-family:sans-serif;'>🦉 OWLSMAN</h1>", unsafe_html=True)
 
 # ==============================================================================
 # THE EXACT STEP-BY-STEP FORMULA ENGINE (SECTION B RULES)
 # ==============================================================================
 def execute_exact_owlsman_system(home, away):
-    # --- PHASE 1: INITIAL CALCULATIONS (DYNAMIC INVERSION SYSTEM) ---
-    # Strictly follows your math: (Goals ÷ Shots) * 100. 
-    # If over 100, do 100 ÷ Index. If under 100, do (1 ÷ Index) * 100.
-    
     h_idx_score = (home["avg_goals_scored"] / home["avg_sot_for"]) * 100
     h_calc_scored = (100 / h_idx_score) if h_idx_score > 100 else (1 / h_idx_score * 100)
     
@@ -66,24 +52,15 @@ def execute_exact_owlsman_system(home, away):
     a_idx_concede = (away["avg_goals_conceded"] / away["avg_sot_against"]) * 100
     a_calc_conceded = (100 / a_idx_concede) if a_idx_concede > 100 else (1 / a_idx_concede * 100)
 
-    # --- PHASE 2: NET SCORES & SCORE POWER ---
-    # Team A Net = Team A Scored ÷ Team B Conceded
     h_net_score = h_calc_scored / a_calc_conceded
-    # Team A Score Power = (Team A Avg Goals ÷ Team B Avg Conceded) ÷ Team A Net * Team A Avg Shots
     h_score_power = ((home["avg_goals_scored"] / away["avg_goals_conceded"]) / h_net_score) * home["avg_sot_for"]
     
-    # Team B Net = Team B Scored ÷ Team A Conceded
     a_net_score = a_calc_scored / h_calc_conceded
-    # Team B Score Power = (Team B Avg Goals ÷ Team A Avg Conceded) ÷ Team B Net * Team B Avg Shots
     a_score_power = ((away["avg_goals_scored"] / home["avg_goals_conceded"]) / a_net_score) * away["avg_sot_for"]
 
-    # --- PHASE 3: STRENGTH BLENDING ---
-    # Team Strength = (xG + Big Chances) ÷ 2 * Score Power
-    # No external baselines or unauthorized steps added.
     home_strength = ((home["avg_xg_for"] + home["avg_bc_scored"]) / 2) * h_score_power
     away_strength = ((away["avg_xg_for"] + away["avg_bc_scored"]) / 2) * a_score_power
 
-    # --- PHASE 4: POISSON GRID GENERATION (MAX 6 CAP) ---
     h_matrix = [stats.poisson.pmf(k, home_strength) for k in range(7)]
     a_matrix = [stats.poisson.pmf(k, away_strength) for k in range(7)]
     grid = np.outer(h_matrix, a_matrix)
@@ -95,7 +72,6 @@ def execute_exact_owlsman_system(home, away):
     total_p = p_home + p_draw + p_away
     p_home, p_draw, p_away = p_home / total_p, p_draw / total_p, p_away / total_p
 
-    # Extract top 2 most likely scorelines from grid matrix cells
     flat_grid = grid.flatten()
     top_two_indices = np.argsort(flat_grid)[::-1][:2]
     correct_scores = []
@@ -103,7 +79,6 @@ def execute_exact_owlsman_system(home, away):
         h_g, a_g = np.unravel_index(idx, grid.shape)
         correct_scores.append(f"{h_g}-{a_g}")
 
-    # --- PHASE 5: 5-ODDS STRESS MATRIX & DOMINANCE INDEX ---
     σ = 0.036
     states = {}
     states["State 0"] = {"H": p_home, "D": p_draw, "A": p_away}
@@ -166,9 +141,8 @@ def get_weekly_fixtures_stream():
     ]
 
 # ==============================================================================
-# FRONTEND INTERFACE GENERATION BLOCK (EXPLICIT OWLSMAN TITLE LOCKED)
+# FRONTEND INTERFACE GENERATION BLOCK
 # ==============================================================================
-st.markdown("<h1 class='main-header'>🦉 OWLSMAN</h1>", unsafe_html=True)
 st.sidebar.markdown("### 📅 Execution Panel")
 loop_mode = st.sidebar.selectbox("Loop Mode", ["7-Day Accumulator (Mon-Sun)"])
 league_select = st.sidebar.selectbox("Isolated League Pool", ["All Active Targets"] + list(TARGET_LEAGUES.keys()))
@@ -182,25 +156,21 @@ for f in fixtures:
     res = execute_exact_owlsman_system(f["home_stats"], f["away_stats"])
 
     with st.container():
-        st.markdown("<div class='fixture-container'>", unsafe_html=True)
-        st.markdown(f"### 🏟️ {f['league']} | {f['home']} vs {f['away']} `[ID: #{f['id']}]`")
+        st.write(f"### 🏟️ {f['league']} | {f['home']} vs {f['away']} `[ID: #{f['id']}]`")
         
         c1, c2, c3 = st.columns(3)
         
         with c1:
             st.markdown("#### 🏛️ Market Lines & Filters")
             st.write(f"**Bookie odds:** H: {f['bookie_odds'][0]} | X: {f['bookie_odds'][1]} | A: {f['bookie_odds'][2]}")
-            
-            st.markdown("**System Alerts:**")
-            alert_html = ""
+            st.write("**System Alerts:**")
             if res["blended_probs"][0] > 0.55 and res["dominance"][0] >= 0.00:
-                alert_html += "<span class='market-badge'>MAIN ASIAN HANDICAP</span>"
+                st.success("MAIN ASIAN HANDICAP")
             if res["blended_probs"][0] > 0.55 and res["dominance"][0] < -0.25:
-                alert_html += "<span class='fade-badge'>FADE FAVORITE (X2)</span>"
+                st.error("FADE FAVORITE (X2)")
             if res["blended_odds"][0] < 2.10 and res["blended_odds"][2] < 2.10:
-                alert_html += "<span class='market-badge'>BTTS: YES</span>"
-            alert_html += "<span class='market-badge'>DOUBLE CHANCE 12</span>"
-            st.markdown(alert_html, unsafe_html=True)
+                st.info("BTTS: YES")
+            st.info("DOUBLE CHANCE 12")
             
         with c2:
             st.markdown("#### 🔮 Master Blended Odds")
@@ -212,9 +182,7 @@ for f in fixtures:
         with c3:
             st.markdown("#### ⚡ Stress & Dominance")
             st.write(f"Odd 0 (Baseline Home): `{res['baseline_odds'][0]:.2f}`")
-            h_c = "#10b981" if res["dominance"][0] >= 0 else "#ef4444"
-            a_c = "#10b981" if res["dominance"][1] >= 0 else "#ef4444"
-            st.markdown(f"Home Dominance: <span style='color:{h_c};font-weight:bold;'>{res['dominance'][0]:.2f}</span>", unsafe_html=True)
-            st.markdown(f"Away Dominance: <span style='color:{a_c};font-weight:bold;'>{res['dominance'][1]:.2f}</span>", unsafe_html=True)
-
-        st.markdown("</div>", unsafe_html=True)
+            st.write(f"Home Dominance: **{res['dominance'][0]:.2f}**")
+            st.write(f"Away Dominance: **{res['dominance'][1]:.2f}**")
+        
+        st.write("---")

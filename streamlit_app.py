@@ -16,7 +16,7 @@ TARGET_LEAGUES = {
 }
 
 st.set_page_config(page_title="OWLSMAN Engine", layout="wide")
-st.markdown("<h1 style='text-align:center;color:#10b981;font-family:sans-serif;'>🦉 OWLSMAN</h1>", allow_html=True)
+st.title("OWLSMAN SYSTEM")
 
 def execute_exact_owlsman_system(home, away):
     h_idx_s = (home["avg_goals_scored"] / home["avg_sot_for"]) * 100
@@ -56,11 +56,11 @@ def execute_exact_owlsman_system(home, away):
         h_g, a_g = np.unravel_index(idx, grid.shape)
         correct_scores.append(f"{h_g}-{a_g}")
         
-    σ = 0.036
+    sigma = 0.036
     states = {"State 0": {"H": p_home, "D": p_draw, "A": p_away}}
     
     def apply_variance_drag(target, b1, b2):
-        boosted = (target + 0.50) - σ
+        boosted = (target + 0.50) - sigma
         norm = boosted + b1 + b2
         return boosted / norm, b1 / norm, b2 / norm
         
@@ -73,7 +73,7 @@ def execute_exact_owlsman_system(home, away):
     d3, h3, a3 = apply_variance_drag(p_draw, p_home, p_away)
     states["State 3"] = {"H": h3, "D": d3, "A": a3}
     
-    h4_r, d4_r, a4_r = (p_home + 0.5 - σ), (p_draw + 0.5 - σ), (p_away + 0.5 - σ)
+    h4_r, d4_r, a4_r = (p_home + 0.5 - sigma), (p_draw + 0.5 - sigma), (p_away + 0.5 - sigma)
     t4 = h4_r + d4_r + a4_r
     states["State 4"] = {"H": h4_r / t4, "D": d4_r / t4, "A": a4_r / t4}
     
@@ -84,17 +84,22 @@ def execute_exact_owlsman_system(home, away):
     blend_d = np.mean([states[s]["D"] for s in states])
     blend_a = np.mean([states[s]["A"] for s in states])
     
-    return {"baseline_odds": [1 / p_home, 1 / p_draw, 1 / p_away], "blended_odds": [1 / blend_h, 1 / blend_d, 1 / blend_a], "blended_probs": [blend_h, blend_d, blend_a], "dominance": [dom_home, dom_away], "correct_scores": correct_scores}
+    return {
+        "baseline_odds": [1 / p_home, 1 / p_draw, 1 / p_away],
+        "blended_odds": [1 / blend_h, 1 / blend_d, 1 / blend_a],
+        "blended_probs": [blend_h, blend_d, blend_a],
+        "dominance": [dom_home, dom_away],
+        "correct_scores": correct_scores
+    }
 
 def get_weekly_fixtures_stream():
     return [{
         "id": 994812, "league": "FIFA World Cup", "home": "Argentina", "away": "France", "bookie_odds": [2.15, 3.20, 3.40],
         "home_stats": {"avg_goals_scored": 2.1, "avg_sot_for": 5.4, "avg_goals_conceded": 0.8, "avg_sot_against": 2.9, "avg_bc_scored": 0.62, "avg_xg_for": 1.85},
-        "away_stats": {"avg_goals_scored": 1.9, "avg_sot_for": 4.8, "avg_goals_conceded": 1.1, "avg_sot_against": 3.2, "avg_bc_scored": 0.55, "avg_xg_for": 1.68
-        }
+        "away_stats": {"avg_goals_scored": 1.9, "avg_sot_for": 4.8, "avg_goals_conceded": 1.1, "avg_sot_against": 3.2, "avg_bc_scored": 0.55, "avg_xg_for": 1.68}
     }]
 
-st.sidebar.markdown("### 📅 Execution Panel")
+st.sidebar.header("Execution Panel")
 loop_mode = st.sidebar.selectbox("Loop Mode", ["7-Day Accumulator (Mon-Sun)"])
 league_select = st.sidebar.selectbox("Isolated League Pool", ["All Active Targets"] + list(TARGET_LEAGUES.keys()))
 
@@ -105,28 +110,28 @@ for f in fixtures:
         continue
     res = execute_exact_owlsman_system(f["home_stats"], f["away_stats"])
     with st.container():
-        st.write(f"### 🏟️ {f['league']} | {f['home']} vs {f['away']} `[ID: #{f['id']}]`")
+        st.header(f"{f['league']} | {f['home']} vs {f['away']} (ID: {f['id']})")
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.markdown("#### 🏛️ Market Lines & Filters")
-            st.write(f"**Bookie odds:** H: {f['bookie_odds'][0]} | X: {f['bookie_odds'][1]} | A: {f['bookie_odds'][2]}")
-            st.write("**System Alerts:**")
+            st.subheader("Market Lines and Filters")
+            st.write(f"Bookie odds: H: {f['bookie_odds'][0]} | X: {f['bookie_odds'][1]} | A: {f['bookie_odds'][2]}")
+            st.write("System Alerts:")
             if res["blended_probs"][0] > 0.55 and res["dominance"][0] >= 0.00:
-                st.success("MAIN ASIAN HANDICAP")
+                st.write("Alert: MAIN ASIAN HANDICAP")
             if res["blended_probs"][0] > 0.55 and res["dominance"][0] < -0.25:
-                st.error("FADE FAVORITE (X2)")
+                st.write("Alert: FADE FAVORITE (X2)")
             if res["blended_odds"][0] < 2.10 and res["blended_odds"][2] < 2.10:
-                st.info("BTTS: YES")
-            st.info("DOUBLE CHANCE 12")
+                st.write("Alert: BTTS: YES")
+            st.write("Alert: DOUBLE CHANCE 12")
         with c2:
-            st.markdown("#### 🔮 Master Blended Odds")
-            st.write(f"True Home Odd: **{res['blended_odds'][0]:.2f}** ({res['blended_probs'][0]*100:.1f}%)")
-            st.write(f"True Draw Odd: **{res['blended_odds'][1]:.2f}** ({res['blended_probs'][1]*100:.1f}%)")
-            st.write(f"True Away Odd: **{res['blended_odds'][2]:.2f}** ({res['blended_probs'][2]*100:.1f}%)")
-            st.write(f"🎯 **Correct Scores:** `{res['correct_scores'][0]}` or `{res['correct_scores'][1]}`")
+            st.subheader("Master Blended Odds")
+            st.write(f"True Home Odd: {res['blended_odds'][0]:.2f} ({res['blended_probs'][0]*100:.1f}%)")
+            st.write(f"True Draw Odd: {res['blended_odds'][1]:.2f} ({res['blended_probs'][1]*100:.1f}%)")
+            st.write(f"True Away Odd: {res['blended_odds'][2]:.2f} ({res['blended_probs'][2]*100:.1f}%)")
+            st.write(f"Correct Scores: {res['correct_scores'][0]} or {res['correct_scores'][1]}")
         with c3:
-            st.markdown("#### ⚡ Stress & Dominance")
-            st.write(f"Odd 0 (Baseline Home): `{res['baseline_odds'][0]:.2f}`")
-            st.write(f"Home Dominance: **{res['dominance'][0]:.2f}**")
-            st.write(f"Away Dominance: **{res['dominance'][1]:.2f}**")
+            st.subheader("Stress and Dominance")
+            st.write(f"Odd 0 (Baseline Home): {res['baseline_odds'][0]:.2f}")
+            st.write(f"Home Dominance: {res['dominance'][0]:.2f}")
+            st.write(f"Away Dominance: {res['dominance'][1]:.2f}")
         st.write("---")

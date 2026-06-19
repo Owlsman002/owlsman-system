@@ -3,25 +3,25 @@ import numpy as np
 from scipy.stats import poisson
 
 
-# ==========================================================
-# PAGE SETTINGS
-# ==========================================================
+# =====================================================
+# APP SETTINGS
+# =====================================================
 
 st.set_page_config(
-    page_title="OWLSNATION Betting Engine",
+    page_title="OWLSNATION ENGINE",
     layout="wide"
 )
 
 
-st.title("🦉 OWLSNATION Football Prediction Engine")
+st.title("🦉 OWLSNATION BETTING ENGINE")
 
 
-# ==========================================================
-# MANUAL DATA INPUT
-# ==========================================================
+# =====================================================
+# INPUT SECTION
+# =====================================================
 
 
-st.sidebar.header("TEAM INPUT")
+st.sidebar.header("MATCH INPUT")
 
 
 home_team = st.sidebar.text_input(
@@ -35,87 +35,73 @@ away_team = st.sidebar.text_input(
 )
 
 
-
 st.sidebar.subheader("HOME LAST 4 MATCHES")
 
 
-home_goals_scored = st.sidebar.number_input(
-    "Home Avg Goals Scored",
+home_goals = st.sidebar.number_input(
+    "Average Goals Scored",
     value=2.0
 )
 
-home_goals_conceded = st.sidebar.number_input(
-    "Home Avg Goals Conceded",
+home_conceded = st.sidebar.number_input(
+    "Average Goals Conceded",
     value=4.0
 )
 
-
 home_sot_for = st.sidebar.number_input(
-    "Home Avg Shots On Target For",
+    "Average Shots On Target For",
     value=5.0
 )
 
-
 home_sot_against = st.sidebar.number_input(
-    "Home Avg Shots On Target Against",
+    "Average Shots On Target Against",
     value=3.0
 )
 
-
 home_xg = st.sidebar.number_input(
-    "Home Avg xG",
+    "Average xG",
     value=0.77
 )
 
-
 home_bc = st.sidebar.number_input(
-    "Home Avg Big Chances Scored",
+    "Average Big Chances Scored",
     value=0.58
 )
-
-
 
 
 
 st.sidebar.subheader("AWAY LAST 4 MATCHES")
 
 
-away_goals_scored = st.sidebar.number_input(
-    "Away Avg Goals Scored",
+away_goals = st.sidebar.number_input(
+    "Average Goals Scored",
     value=3.0
 )
 
-
-away_goals_conceded = st.sidebar.number_input(
-    "Away Avg Goals Conceded",
+away_conceded = st.sidebar.number_input(
+    "Average Goals Conceded",
     value=5.0
 )
 
-
 away_sot_for = st.sidebar.number_input(
-    "Away Avg Shots On Target For",
+    "Average Shots On Target For",
     value=2.0
 )
 
-
 away_sot_against = st.sidebar.number_input(
-    "Away Avg Shots On Target Against",
+    "Average Shots On Target Against",
     value=8.0
 )
 
-
 away_xg = st.sidebar.number_input(
-    "Away Avg xG",
+    "Average xG",
     value=0.89
 )
 
-
 away_bc = st.sidebar.number_input(
-    "Away Avg Big Chances Scored",
+    "Average Big Chances Scored",
     value=0.50
 )
-
-
 
 
 
@@ -123,79 +109,77 @@ st.sidebar.subheader("BOOKMAKER ODDS")
 
 
 book_home = st.sidebar.number_input(
-    "Bookie Home Odd",
-    value=1.80
+    "Home Odd",
+    value=3.00
 )
 
 book_draw = st.sidebar.number_input(
-    "Bookie Draw Odd",
-    value=3.50
+    "Draw Odd",
+    value=3.20
 )
 
 book_away = st.sidebar.number_input(
-    "Bookie Away Odd",
-    value=4.50
+    "Away Odd",
+    value=2.20
 )
 
 
 
 
-
-# ==========================================================
+# =====================================================
 # PHASE 1
-# CALCULATED SCORED AND CONCEDED
-# ==========================================================
+# CALCULATED SCORED / CONCEDED
+# =====================================================
 
 
-def calculate_efficiency(goals, sot):
+def calculate_attack(goals, sot):
 
+    if sot == 0:
+        return 0
 
-    result = (
+    percentage = (
         goals / sot
     ) * 100
 
 
-    final = (
-        1 / result
+    return (
+        1 / percentage
     ) * 100
 
 
-    return final
 
 
-
-
-home_calc_scored = calculate_efficiency(
-    home_goals_scored,
+home_calc_scored = calculate_attack(
+    home_goals,
     home_sot_for
 )
 
 
-home_calc_conceded = calculate_efficiency(
-    home_goals_conceded,
+home_calc_conceded = calculate_attack(
+    home_conceded,
     home_sot_against
 )
 
 
 
-away_calc_scored = calculate_efficiency(
-    away_goals_scored,
+away_calc_scored = calculate_attack(
+    away_goals,
     away_sot_for
 )
 
 
-away_calc_conceded = calculate_efficiency(
-    away_goals_conceded,
+away_calc_conceded = calculate_attack(
+    away_conceded,
     away_sot_against
 )
 
 
 
-# ==========================================================
-# PHASE 2
-# NET SCORE AND SCORE POWER
-# ==========================================================
 
+# =====================================================
+# PHASE 2
+# NET SCORE + SCORE POWER
+# =====================================================
 
 
 home_net_score = (
@@ -208,13 +192,13 @@ home_net_score = (
 
 
 
-home_power = (
+home_score_power = (
 
     (
 
-    home_goals_scored /
+        home_goals /
 
-    away_goals_conceded
+        away_conceded
 
     )
 
@@ -229,7 +213,6 @@ home_power = (
 
 
 
-
 away_net_score = (
 
     away_calc_scored /
@@ -240,13 +223,13 @@ away_net_score = (
 
 
 
-away_power = (
+away_score_power = (
 
     (
 
-    away_goals_scored /
+        away_goals /
 
-    home_goals_conceded
+        home_conceded
 
     )
 
@@ -262,20 +245,19 @@ away_power = (
 
 
 
-# ==========================================================
+# =====================================================
 # PHASE 3
 # TEAM STRENGTH
-# ==========================================================
-
+# =====================================================
 
 
 home_strength = (
 
     (
 
-    home_xg +
+        home_xg +
 
-    home_bc
+        home_bc
 
     )
 
@@ -285,8 +267,7 @@ home_strength = (
 
 )
 
-* home_power
-
+* home_score_power
 
 
 
@@ -294,9 +275,9 @@ away_strength = (
 
     (
 
-    away_xg +
+        away_xg +
 
-    away_bc
+        away_bc
 
     )
 
@@ -306,20 +287,19 @@ away_strength = (
 
 )
 
-* away_power
+* away_score_power
 
 
 
 
 
-# ==========================================================
+# =====================================================
 # PHASE 4
-# POISSON MATRIX
-# ==========================================================
+# POISSON ODD 0
+# =====================================================
 
 
-
-def poisson_engine(home_strength, away_strength):
+def poisson_engine(home_lambda, away_lambda):
 
 
     cap = 6
@@ -327,37 +307,31 @@ def poisson_engine(home_strength, away_strength):
 
     home_matrix = [
 
-        poisson.pmf(x, home_strength)
+        poisson.pmf(i, home_lambda)
 
-        for x in range(cap+1)
+        for i in range(cap+1)
 
     ]
 
 
     away_matrix = [
 
-        poisson.pmf(x, away_strength)
+        poisson.pmf(i, away_lambda)
 
-        for x in range(cap+1)
+        for i in range(cap+1)
 
     ]
 
 
 
     grid = np.outer(
-
         home_matrix,
-
         away_matrix
-
     )
 
 
-
     home_win = 0
-
     draw = 0
-
     away_win = 0
 
 
@@ -386,33 +360,30 @@ def poisson_engine(home_strength, away_strength):
     total = home_win + draw + away_win
 
 
-    probs = {
+    probabilities = {
 
+        "Home": home_win/total,
 
-        "home":home_win/total,
+        "Draw": draw/total,
 
-        "draw":draw/total,
-
-        "away":away_win/total
+        "Away": away_win/total
 
     }
-
 
 
     odds = {
 
+        k:
 
-        "home":1/probs["home"],
+        1/v
 
-        "draw":1/probs["draw"],
-
-        "away":1/probs["away"]
+        for k,v in probabilities.items()
 
     }
 
 
 
-    return grid, probs, odds
+    return grid, probabilities, odds
 
 
 
@@ -430,105 +401,98 @@ grid, baseline_prob, baseline_odds = poisson_engine(
 
 
 
-
-# ==========================================================
+# =====================================================
 # PHASE 5
-# VARIANCE DRAG
-# ==========================================================
+# VARIANCE STRESS MATRIX
+# =====================================================
 
 
-def stress_matrix(prob):
+def stress_matrix(base):
 
 
-    sigma = 0.036
+    drag = 100 * 0.036
 
 
-    drag = sigma
-
-
-    states = {}
+    states={}
 
 
 
-    states["Odd 0"] = prob
+    states["Odd 0"] = base
 
 
 
-    def stress(target):
+    def create(target):
 
 
-        h = prob["home"]
+        h = base["Home"]*100
 
-        d = prob["draw"]
+        d = base["Draw"]*100
 
-        a = prob["away"]
-
-
-        if target=="home":
-
-            h +=0.50
-
-            h-=drag
+        a = base["Away"]*100
 
 
-        if target=="draw":
 
-            d+=0.50
+        if target=="Home":
 
-            d-=drag
+            h=(h+50)-drag
 
 
-        if target=="away":
+        if target=="Draw":
 
-            a+=0.50
+            d=(d+50)-drag
 
-            a-=drag
+
+        if target=="Away":
+
+            a=(a+50)-drag
 
 
 
         total=h+d+a
 
 
+
         return {
 
 
-        "home":h/total,
+        "Home":h/total,
 
-        "draw":d/total,
+        "Draw":d/total,
 
-        "away":a/total
+        "Away":a/total
 
         }
 
 
 
+    states["Odd 1"] = create("Home")
+
+    states["Odd 2"] = create("Away")
+
+    states["Odd 3"] = create("Draw")
 
 
-    states["Odd 1"]=stress("home")
 
-    states["Odd 2"]=stress("away")
 
-    states["Odd 3"]=stress("draw")
+    h=(base["Home"]*100+50)-drag
 
+    d=(base["Draw"]*100+50)-drag
+
+    a=(base["Away"]*100+50)-drag
+
+
+
+    total=h+d+a
 
 
     states["Odd 4"]={
 
 
-        "home":(prob["home"]+0.50-drag)/
+        "Home":h/total,
 
-        (sum(prob.values())+1.50-(drag*3)),
+        "Draw":d/total,
 
-
-        "draw":(prob["draw"]+0.50-drag)/
-
-        (sum(prob.values())+1.50-(drag*3)),
-
-
-        "away":(prob["away"]+0.50-drag)/
-
-        (sum(prob.values())+1.50-(drag*3))
-
+        "Away":a/total
 
     }
 
@@ -539,11 +503,8 @@ def stress_matrix(prob):
 
 
 
-
 states = stress_matrix(
-
     baseline_prob
-
 )
 
 
@@ -551,45 +512,66 @@ states = stress_matrix(
 
 
 
-# ==========================================================
+# =====================================================
+# DOMINANCE INDEX
+# =====================================================
+
+
+dominance={}
+
+
+for team in ["Home","Away"]:
+
+
+    score=0
+
+
+    baseline = baseline_prob[team]
+
+
+    for state in states.values():
+
+        score += (
+
+            state[team]
+
+            -
+
+            baseline
+
+        )
+
+
+    dominance[team]=score
+
+
+
+
+
+
+# =====================================================
 # MASTER ODDS
-# ==========================================================
+# =====================================================
+
+
+master_prob={}
 
 
 
-master_prob = {
+for outcome in ["Home","Draw","Away"]:
 
 
-"home":
+    master_prob[outcome]=np.mean(
 
-np.mean(
+        [
 
-[states[x]["home"] for x in states]
+            states[x][outcome]
 
-),
+            for x in states
 
+        ]
 
-"draw":
-
-np.mean(
-
-[states[x]["draw"] for x in states]
-
-),
-
-
-"away":
-
-np.mean(
-
-[states[x]["away"] for x in states]
-
-)
-
-
-}
-
-
+    )
 
 
 
@@ -598,9 +580,9 @@ master_odds={
 
 x:
 
-1/master_prob[x]
+1/y
 
-for x in master_prob
+for x,y in master_prob.items()
 
 }
 
@@ -609,24 +591,21 @@ for x in master_prob
 
 
 
-# ==========================================================
-# PHASE 6
-# VALUE AND DECISION
-# ==========================================================
+
+# =====================================================
+# BOOKMAKER VALUE
+# =====================================================
 
 
 book_prob={
 
+"Home":1/book_home,
 
-"home":1/book_home,
+"Draw":1/book_draw,
 
-"draw":1/book_draw,
-
-"away":1/book_away
-
+"Away":1/book_away
 
 }
-
 
 
 value={
@@ -642,34 +621,26 @@ for x in master_prob
 
 
 
-best_market=max(
-
-value,
-
-key=value.get
-
-)
 
 
-
-
-
-
-# ==========================================================
+# =====================================================
 # CORRECT SCORES
-# ==========================================================
+# =====================================================
 
 
-flat = grid.flatten()
+top = np.argsort(
+
+    grid.flatten()
+
+)[::-1][:2]
 
 
-top = np.argsort(flat)[::-1][:2]
 
-
-scores=[]
+correct=[]
 
 
 for i in top:
+
 
     h,a=np.unravel_index(
 
@@ -680,7 +651,7 @@ for i in top:
     )
 
 
-    scores.append(
+    correct.append(
 
         f"{h}-{a}"
 
@@ -691,64 +662,55 @@ for i in top:
 
 
 
-# ==========================================================
+# =====================================================
 # OUTPUT
-# ==========================================================
+# =====================================================
 
 
-st.subheader(
+st.header(
+
 f"{home_team} vs {away_team}"
+
 )
 
 
-col1,col2,col3=st.columns(3)
+st.write(
+"Home Strength:",
+round(home_strength,2)
+)
 
 
-with col1:
-
-    st.write("TEAM STRENGTH")
-
-    st.write(
-        "Home:",
-        round(home_strength,2)
-    )
-
-    st.write(
-        "Away:",
-        round(away_strength,2)
-    )
+st.write(
+"Away Strength:",
+round(away_strength,2)
+)
 
 
 
-with col2:
+st.subheader("BASELINE ODD 0")
 
-    st.write("BASELINE ODD 0")
-
-    st.write(baseline_odds)
+st.write(baseline_odds)
 
 
 
-with col3:
+st.subheader("MASTER ODDS")
 
-    st.write("MASTER ODDS")
-
-    st.write(master_odds)
+st.write(master_odds)
 
 
 
-st.subheader("VALUE EDGE")
+st.subheader("DOMINANCE INDEX")
+
+st.write(dominance)
+
+
+
+st.subheader("BOOKMAKER VALUE GAP")
 
 st.write(value)
 
 
-st.success(
 
-f"Model prefers: {best_market}"
+st.subheader("TOP CORRECT SCORES")
 
-)
-
-
-
-st.subheader("Correct Scores")
-
-st.write(scores)
+st.write(correct)

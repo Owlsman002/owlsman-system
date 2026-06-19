@@ -16,7 +16,7 @@ TARGET_LEAGUES = {
 }
 
 st.set_page_config(page_title="OWLSMAN Engine", layout="wide")
-st.markdown("<h1 style='text-align:center;color:#10b981;font-family:sans-serif;'>🦉 OWLSMAN</h1>", unsafe_html=True)
+st.markdown("<h1 style='text-align:center;color:#10b981;font-family:sans-serif;'>🦉 OWLSMAN</h1>", allow_html=True)
 
 def execute_exact_owlsman_system(home, away):
     h_idx_s = (home["avg_goals_scored"] / home["avg_sot_for"]) * 100
@@ -68,7 +68,7 @@ def execute_exact_owlsman_system(home, away):
     states["State 1"] = {"H": h1, "D": d1, "A": a1}
     
     a2, h2, d2 = apply_variance_drag(p_away, p_home, p_draw)
-    states["State 2"] = {"H": h2, "D": d2, "A": a2}
+    states["State 2"] = {"H": a2, "D": h2, "A": d2}
     
     d3, h3, a3 = apply_variance_drag(p_draw, p_home, p_away)
     states["State 3"] = {"H": h3, "D": d3, "A": a3}
@@ -90,7 +90,8 @@ def get_weekly_fixtures_stream():
     return [{
         "id": 994812, "league": "FIFA World Cup", "home": "Argentina", "away": "France", "bookie_odds": [2.15, 3.20, 3.40],
         "home_stats": {"avg_goals_scored": 2.1, "avg_sot_for": 5.4, "avg_goals_conceded": 0.8, "avg_sot_against": 2.9, "avg_bc_scored": 0.62, "avg_xg_for": 1.85},
-        "away_stats": {"avg_goals_scored": 1.9, "avg_sot_for": 4.8, "avg_goals_conceded": 1.1, "avg_sot_against": 3.2, "avg_bc_scored": 0.55, "avg_xg_for": 1.68}
+        "away_stats": {"avg_goals_scored": 1.9, "avg_sot_for": 4.8, "avg_goals_conceded": 1.1, "avg_sot_against": 3.2, "avg_bc_scored": 0.55, "avg_xg_for": 1.68
+        }
     }]
 
 st.sidebar.markdown("### 📅 Execution Panel")

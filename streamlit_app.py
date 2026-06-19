@@ -4,22 +4,22 @@ from scipy.stats import poisson
 import math
 
 
-# =====================================================
+# ==========================
 # APP SETTINGS
-# =====================================================
+# ==========================
 
 st.set_page_config(
-    page_title="OWLSNATION ENGINE V2",
+    page_title="OWLSNATION ENGINE",
     layout="wide"
 )
 
-st.title("🦉 OWLSNATION ENGINE V2")
+
+st.title("🦉 OWLSNATION BETTING ENGINE")
 
 
-
-# =====================================================
+# ==========================
 # SAFE FUNCTIONS
-# =====================================================
+# ==========================
 
 def safe_div(a,b):
 
@@ -30,7 +30,7 @@ def safe_div(a,b):
 
 
 
-def odds(prob):
+def odd_converter(prob):
 
     if prob <= 0:
         return 999
@@ -39,64 +39,58 @@ def odds(prob):
 
 
 
-# =====================================================
-# INPUT SECTION
-# =====================================================
-
-st.sidebar.header("MATCH INPUT")
+# ==========================
+# MANUAL INPUT
+# ==========================
 
 
-home = st.sidebar.text_input(
+home_team = st.text_input(
     "Home Team",
     "Team A"
 )
 
 
-away = st.sidebar.text_input(
+away_team = st.text_input(
     "Away Team",
     "Team B"
 )
 
 
 
-# =====================================================
-# HOME TEAM DATA
-# =====================================================
-
-st.sidebar.subheader("HOME LAST 4 MATCHES")
+st.header("HOME LAST 4 MATCHES")
 
 
-G_A = st.sidebar.number_input(
+G_A = st.number_input(
     "Home Average Goals Scored",
     value=2.0
 )
 
 
-C_A = st.sidebar.number_input(
+C_A = st.number_input(
     "Home Average Goals Conceded",
     value=4.0
 )
 
 
-SOT_A = st.sidebar.number_input(
+SOT_A = st.number_input(
     "Home Shots On Target For",
     value=5.0
 )
 
 
-SOTA_A = st.sidebar.number_input(
+SOTA_A = st.number_input(
     "Home Shots On Target Against",
     value=3.0
 )
 
 
-xG_A = st.sidebar.number_input(
+xG_A = st.number_input(
     "Home xG",
     value=0.77
 )
 
 
-BC_A = st.sidebar.number_input(
+BC_A = st.number_input(
     "Home Big Chances",
     value=0.58
 )
@@ -104,92 +98,81 @@ BC_A = st.sidebar.number_input(
 
 
 
-# =====================================================
-# AWAY TEAM DATA
-# =====================================================
-
-st.sidebar.subheader("AWAY LAST 4 MATCHES")
+st.header("AWAY LAST 4 MATCHES")
 
 
-G_B = st.sidebar.number_input(
+G_B = st.number_input(
     "Away Average Goals Scored",
     value=3.0
 )
 
 
-C_B = st.sidebar.number_input(
+C_B = st.number_input(
     "Away Average Goals Conceded",
     value=5.0
 )
 
 
-SOT_B = st.sidebar.number_input(
+SOT_B = st.number_input(
     "Away Shots On Target For",
     value=2.0
 )
 
 
-SOTA_B = st.sidebar.number_input(
+SOTA_B = st.number_input(
     "Away Shots On Target Against",
     value=8.0
 )
 
 
-xG_B = st.sidebar.number_input(
+xG_B = st.number_input(
     "Away xG",
     value=0.89
 )
 
 
-BC_B = st.sidebar.number_input(
+BC_B = st.number_input(
     "Away Big Chances",
     value=0.50
 )
 
 
 
-
-# =====================================================
-# MANUAL BOOKMAKER ODDS INPUT
-# =====================================================
-
-st.sidebar.subheader("BOOKMAKER ODDS INPUT")
+st.header("BOOKMAKER ODDS")
 
 
-BOOK_HOME = st.sidebar.number_input(
-    "Bookmaker Home Odd",
-    value=3.00,
-    min_value=1.01
+book_home = st.number_input(
+    "Book Home Odd",
+    value=3.00
 )
 
 
-BOOK_DRAW = st.sidebar.number_input(
-    "Bookmaker Draw Odd",
-    value=3.20,
-    min_value=1.01
+book_draw = st.number_input(
+    "Book Draw Odd",
+    value=3.20
 )
 
 
-BOOK_AWAY = st.sidebar.number_input(
-    "Bookmaker Away Odd",
-    value=2.20,
-    min_value=1.01
+book_away = st.number_input(
+    "Book Away Odd",
+    value=2.20
 )
 
 
 
 
-# =====================================================
+# ==========================
 # RUN ENGINE
-# =====================================================
-
-if st.button("RUN OWLSNATION ENGINE"):
+# ==========================
 
 
+if st.button("RUN MODEL"):
 
-    # =================================================
+
+
+    # ======================
     # PHASE 1
-    # =================================================
+    # ======================
 
 
     Calc_Scored_A = safe_div(
@@ -217,9 +200,9 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
-    # =================================================
+    # ======================
     # PHASE 2
-    # =================================================
+    # ======================
 
 
     Net_A = safe_div(
@@ -235,18 +218,13 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
     Power_A = (
-
         safe_div(
             Ratio_A,
             Net_A
         )
-
         *
-
         SOT_A
-
     )
-
 
 
 
@@ -263,59 +241,41 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
     Power_B = (
-
         safe_div(
             Ratio_B,
             Net_B
         )
-
         *
-
         SOT_B
-
     )
 
 
 
-
-    # =================================================
+    # ======================
     # PHASE 3
-    # =================================================
+    # ======================
 
 
-    alpha = (
+    home_strength = (
 
-        safe_div(
-            xG_A + BC_A,
-            2
-        )
+        (xG_A + BC_A)/2
 
-        *
-
-        Power_A
-
-    )
+    ) * Power_A
 
 
 
-    beta = (
+    away_strength = (
 
-        safe_div(
-            xG_B + BC_B,
-            2
-        )
+        (xG_B + BC_B)/2
 
-        *
-
-        Power_B
-
-    )
+    ) * Power_B
 
 
 
-    # =================================================
+
+    # ======================
     # PHASE 4 POISSON
-    # =================================================
+    # ======================
 
 
     cap = 6
@@ -323,16 +283,23 @@ if st.button("RUN OWLSNATION ENGINE"):
 
     home_matrix = [
 
-        poisson.pmf(i,alpha)
+        poisson.pmf(
+            i,
+            home_strength
+        )
 
         for i in range(cap+1)
 
     ]
+
 
 
     away_matrix = [
 
-        poisson.pmf(i,beta)
+        poisson.pmf(
+            i,
+            away_strength
+        )
 
         for i in range(cap+1)
 
@@ -340,16 +307,16 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
-    grid=np.outer(
+    grid = np.outer(
         home_matrix,
         away_matrix
     )
 
 
 
-    home_prob=0
-    draw_prob=0
-    away_prob=0
+    home_prob = 0
+    draw_prob = 0
+    away_prob = 0
 
 
 
@@ -357,13 +324,12 @@ if st.button("RUN OWLSNATION ENGINE"):
 
         for a in range(cap+1):
 
-
-            if h>a:
+            if h > a:
 
                 home_prob += grid[h][a]
 
 
-            elif h==a:
+            elif h == a:
 
                 draw_prob += grid[h][a]
 
@@ -374,16 +340,15 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
-
     total = (
-        home_prob+
-        draw_prob+
+        home_prob +
+        draw_prob +
         away_prob
     )
 
 
 
-    base={
+    baseline = {
 
         "Home":home_prob/total,
 
@@ -395,79 +360,90 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
+    baseline_odds = {
 
-    # =================================================
-    # VARIANCE DRAG
-    # =================================================
+        x:odd_converter(y)
+
+        for x,y in baseline.items()
+
+    }
 
 
-    sigma=0.036
 
-    drag=100*sigma
+
+    # ======================
+    # PHASE 5 STRESS MATRIX
+    # ======================
+
+
+    sigma = 0.036
 
 
     states={}
 
-    states["Odd 0"]=base
+
+    states["0"] = baseline
 
 
 
-    def stress(target):
+    def create_state(target):
 
-        h=base["Home"]*100
-        d=base["Draw"]*100
-        a=base["Away"]*100
+
+        h = baseline["Home"]*100
+        d = baseline["Draw"]*100
+        a = baseline["Away"]*100
 
 
         if target=="Home":
 
-            h=h+50-drag
+            h += 50 - (100*sigma)
 
 
         if target=="Draw":
 
-            d=d+50-drag
+            d += 50 - (100*sigma)
 
 
         if target=="Away":
 
-            a=a+50-drag
+            a += 50 - (100*sigma)
 
 
 
         total=h+d+a
 
 
-        return{
+        return {
 
             "Home":h/total,
-
             "Draw":d/total,
-
             "Away":a/total
 
         }
 
 
 
+    states["1"]=create_state("Home")
 
-    states["Odd 1"]=stress("Home")
+    states["2"]=create_state("Away")
 
-    states["Odd 2"]=stress("Away")
-
-    states["Odd 3"]=stress("Draw")
-
+    states["3"]=create_state("Draw")
 
 
-    h=base["Home"]*100+50-drag
-    d=base["Draw"]*100+50-drag
-    a=base["Away"]*100+50-drag
+
+
+    h = baseline["Home"]*100 + 50 -(100*sigma)
+
+    d = baseline["Draw"]*100 + 50 -(100*sigma)
+
+    a = baseline["Away"]*100 + 50 -(100*sigma)
+
 
 
     total=h+d+a
 
 
-    states["Odd 4"]={
+    states["4"]={
 
         "Home":h/total,
 
@@ -480,12 +456,13 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
-    # =================================================
+    # ======================
     # DOMINANCE
-    # =================================================
+    # ======================
 
 
     dominance={}
+
 
 
     for side in ["Home","Away"]:
@@ -503,7 +480,7 @@ if st.button("RUN OWLSNATION ENGINE"):
 
                 -
 
-                base[side]
+                baseline[side]
 
             )
 
@@ -513,25 +490,31 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
 
-    # =================================================
+    # ======================
     # MASTER ODDS
-    # =================================================
+    # ======================
 
 
     master_prob={}
 
 
 
-    for x in ["Home","Draw","Away"]:
+    for outcome in [
+
+        "Home",
+        "Draw",
+        "Away"
+
+    ]:
 
 
-        master_prob[x]=np.mean(
+        master_prob[outcome]=np.mean(
 
             [
 
-                states[s][x]
+                states[x][outcome]
 
-                for s in states
+                for x in states
 
             ]
 
@@ -541,27 +524,27 @@ if st.button("RUN OWLSNATION ENGINE"):
 
     master_odds={
 
-        x:odds(master_prob[x])
+        x:odd_converter(y)
 
-        for x in master_prob
+        for x,y in master_prob.items()
 
     }
 
 
 
-    # =================================================
-    # BOOKMAKER COMPARISON
-    # =================================================
+
+    # ======================
+    # BOOK VALUE
+    # ======================
 
 
     book_prob={
 
+        "Home":1/book_home,
 
-        "Home":1/BOOK_HOME,
+        "Draw":1/book_draw,
 
-        "Draw":1/BOOK_DRAW,
-
-        "Away":1/BOOK_AWAY
+        "Away":1/book_away
 
     }
 
@@ -569,9 +552,11 @@ if st.button("RUN OWLSNATION ENGINE"):
 
     value={
 
+
         x:
 
         master_prob[x]-book_prob[x]
+
 
         for x in master_prob
 
@@ -580,20 +565,54 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
     best=max(
+
         value,
+
         key=value.get
+
     )
 
 
 
-    # =================================================
+
+    # ======================
+    # MARKET CHECK
+    # ======================
+
+
+    expected_goals = (
+
+        home_strength +
+
+        away_strength
+
+    )
+
+
+    btts=(
+
+        1-math.exp(-home_strength)
+
+    )*(
+
+        1-math.exp(-away_strength)
+
+    )
+
+
+
+
+    # ======================
     # CORRECT SCORES
-    # =================================================
+    # ======================
 
 
     top=np.argsort(
+
         grid.flatten()
+
     )[::-1][:2]
+
 
 
     scores=[]
@@ -603,95 +622,126 @@ if st.button("RUN OWLSNATION ENGINE"):
 
 
         h,a=np.unravel_index(
+
             i,
+
             grid.shape
+
         )
 
 
         scores.append(
+
             f"{h}-{a}"
+
         )
 
 
 
 
-    # =================================================
+    # ======================
     # OUTPUT
-    # =================================================
+    # ======================
 
 
     st.header(
-        f"{home} vs {away}"
+
+        f"{home_team} vs {away_team}"
+
     )
 
 
-    st.subheader("FINAL STRENGTH")
+
+    st.subheader(
+        "TEAM STRENGTH"
+    )
+
 
     st.write(
         "Home Strength:",
-        round(alpha,2)
+        round(home_strength,2)
     )
 
 
     st.write(
         "Away Strength:",
-        round(beta,2)
+        round(away_strength,2)
     )
 
 
 
-    st.subheader("BASELINE ODD 0")
-
-    st.write({
-
-        "Home":odds(base["Home"]),
-
-        "Draw":odds(base["Draw"]),
-
-        "Away":odds(base["Away"])
-
-    })
-
-
-
-    st.subheader("MASTER ODDS")
-
-    st.write(master_odds)
-
-
-
-    st.subheader("BOOKMAKER ODDS")
-
-    st.write({
-
-        "Home":BOOK_HOME,
-
-        "Draw":BOOK_DRAW,
-
-        "Away":BOOK_AWAY
-
-    })
-
-
-
-    st.subheader("VALUE GAP")
-
-    st.write(value)
+    st.subheader(
+        "BASELINE ODDS"
+    )
 
 
     st.write(
-        "Best Value Side:",
+        baseline_odds
+    )
+
+
+
+    st.subheader(
+        "MASTER ODDS"
+    )
+
+
+    st.write(
+        master_odds
+    )
+
+
+
+    st.subheader(
+        "DOMINANCE"
+    )
+
+
+    st.write(
+        dominance
+    )
+
+
+
+    st.subheader(
+        "BOOKMAKER VALUE"
+    )
+
+
+    st.write(
+        value
+    )
+
+
+    st.write(
+        "Best Value:",
         best
     )
 
 
 
-    st.subheader("DOMINANCE INDEX")
+    st.subheader(
+        "MARKET CHECK"
+    )
 
-    st.write(dominance)
+
+    st.write(
+        "BTTS Probability:",
+        round(btts*100,2),
+        "%"
+    )
+
+
+    st.write(
+        "Expected Goals:",
+        round(expected_goals,2)
+    )
 
 
 
-    st.subheader("CORRECT SCORES")
+    st.subheader(
+        "CORRECT SCORES"
+    )
+
 
     st.write(scores)

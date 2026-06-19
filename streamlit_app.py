@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.stats as stats
 import streamlit as st
+import json
+import os
 
 TARGET_LEAGUES = {
     "England - Premier League": 8, "England - Championship": 9,
@@ -92,18 +94,21 @@ def execute_exact_owlsman_system(home, away):
         "correct_scores": correct_scores
     }
 
-def get_weekly_fixtures_stream():
+def load_fixtures():
+    if os.path.exists("fixtures.json"):
+        with open("fixtures.json", "r") as f:
+            return json.load(f)
     return [{
-        "id": 994812, "league": "FIFA World Cup", "home": "Argentina", "away": "France", "bookie_odds": [2.15, 3.20, 3.40],
-        "home_stats": {"avg_goals_scored": 2.1, "avg_sot_for": 5.4, "avg_goals_conceded": 0.8, "avg_sot_against": 2.9, "avg_bc_scored": 0.62, "avg_xg_for": 1.85},
-        "away_stats": {"avg_goals_scored": 1.9, "avg_sot_for": 4.8, "avg_goals_conceded": 1.1, "avg_sot_against": 3.2, "avg_bc_scored": 0.55, "avg_xg_for": 1.68}
+        "id": 1, "league": "England - Premier League", "home": "Manchester City", "away": "Arsenal", "bookie_odds": [1.95, 3.40, 3.80],
+        "home_stats": {"avg_goals_scored": 2.4, "avg_sot_for": 6.1, "avg_goals_conceded": 0.9, "avg_sot_against": 3.1, "avg_bc_scored": 0.75, "avg_xg_for": 2.10},
+        "away_stats": {"avg_goals_scored": 2.0, "avg_sot_for": 5.2, "avg_goals_conceded": 0.8, "avg_sot_against": 2.8, "avg_bc_scored": 0.68, "avg_xg_for": 1.90}
     }]
 
 st.sidebar.header("Execution Panel")
 loop_mode = st.sidebar.selectbox("Loop Mode", ["7-Day Accumulator (Mon-Sun)"])
 league_select = st.sidebar.selectbox("Isolated League Pool", ["All Active Targets"] + list(TARGET_LEAGUES.keys()))
 
-fixtures = get_weekly_fixtures_stream()
+fixtures = load_fixtures()
 
 for f in fixtures:
     if league_select != "All Active Targets" and f["league"] != league_select:

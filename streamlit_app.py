@@ -3,9 +3,9 @@ import streamlit as st
 from owlsnation_engine import TeamStats, run_engine
 
 
-st.set_page_config(page_title="OWLSNATION Engine", page_icon="🦉", layout="wide")
+st.set_page_config(page_title="OWLSNATION Engine", page_icon=, layout="wide")
 
-st.title("🦉 OWLSNATION Engine")
+st.title("OWLSNATION Engine")
 st.caption("Strength → Poisson Baseline → 5-State Stress Matrix → Dominance Index → "
            "3-Way Draw Comparison → Markets & Correct Scores")
 
